@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  smartcrop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartcrop
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - smartcrop
+    restart: unless-stopped
+
+volumes:
+  nginx_cache:
