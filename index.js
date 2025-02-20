@@ -7,6 +7,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /**
+ * Define a custom canvasFactory as a function that returns a canvas.
+ * Attach an `open` method to get the canvas context.
+ */
+function customCanvasFactory(width, height) {
+  return createCanvas(width, height);
+}
+customCanvasFactory.open = function(canvas) {
+  return canvas.getContext('2d');
+};
+
+/**
  * Route: /:dimensions/crop/:host/*
  * Example: /1080x1920/crop/images.bild.de/67b496cba918eb195a71f22f/ee041dbc12e6f9b376da7e48380ce52a,433c64b2
  */
@@ -42,8 +53,12 @@ app.get('/:dimensions/crop/:host/*', async (req, res) => {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0);
     
-    // Run smartcrop with the desired dimensions
-    const cropResult = await smartcrop.crop(canvas, { width: cropWidth, height: cropHeight });
+    // Run smartcrop with the desired dimensions and custom canvasFactory
+    const cropResult = await smartcrop.crop(canvas, {
+      width: cropWidth,
+      height: cropHeight,
+      canvasFactory: customCanvasFactory
+    });
     const crop = cropResult.topCrop;
     
     // Create a new canvas for the cropped result and draw the cropped area
